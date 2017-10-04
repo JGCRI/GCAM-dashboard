@@ -43,7 +43,11 @@ shinyServer(function(input, output, session) {
         }
 
         if(!is.null(rFileinfo()$project.data)) {
-            if(input$diffCheck) {
+            if(input$plotScenario == "") {
+                # When first loading a dataset, no scenario is selected
+                qscenarios <- scenarios
+            }
+            else if(input$diffCheck) {
                 qscenarios <- c(input$plotScenario, input$diffScenario)
             }
             else {
@@ -79,12 +83,13 @@ shinyServer(function(input, output, session) {
         prj <- isolate(rFileinfo()$project.data)
         query <- input$plotQuery
         if(uiStateValid(prj, scen, query)) {
-            ## Asumes that a particular query has the same columns in all scenarios
+            ## Assumes that a particular query has the same columns in all scenarios
             querycols <- getQuery(prj, query, scen) %>% names
-            catvars <- grep(year.regex, querycols, invert=TRUE, value=TRUE) %>%
-                grep('scenario|Units', . , invert=TRUE, value=TRUE)
-            updateSelectInput(session, 'tvSubcatVar', choices=c('none',
-                                                      catvars))
+            catvars <- querycols[!querycols %in% c('scenario', 'Units', 'year', 'value')]
+            prevSubcat <- if(input$tvSubcatVar %in% catvars) input$tvSubcatVar else 'none'
+            updateSelectInput(session, 'tvSubcatVar', choices=c('none', catvars),
+                              selected=prevSubcat)
+
             ## now do the map slider
             yrlimits <- getQueryYears(prj, scen, query)
             yrsel <- isolate(input$mapYear)
@@ -140,18 +145,28 @@ shinyServer(function(input, output, session) {
     output$mapName <- renderText({input$plotQuery})
 
     output$timePlot <- renderPlot({
-        if(uiStateValid( rFileinfo()$project.data, input$plotScenario,
-                        input$plotQuery )) {
+        prj <- rFileinfo()$project.data
+        scen <- input$plotScenario
+        query <- input$plotQuery
+        if(uiStateValid(prj, scen, query)) {
                diffscen <- if(input$diffCheck) {
                    input$diffScenario
                } else {
-                     NULL
-                 }
+                   NULL
+               }
+               tvSubcatVar <- input$tvSubcatVar
+
                region.filter <- c(input$tvRgns1, input$tvRgns2, input$tvRgns3,
                                   input$tvRgns4, input$tvRgns5)
                last.region.filter <<- region.filter
-               plotTime(rFileinfo()$project.data, input$plotQuery,
-                        input$plotScenario, diffscen, input$tvSubcatVar,
+
+               # If the query has changed, the value of the subcategory selector
+               # may not be valid anymore. Change it to none.
+               if(!tvSubcatVar %in% names(getQuery(prj, query, scen))) {
+                  tvSubcatVar <- 'none'
+               }
+
+               plotTime(prj, query, scen, diffscen, tvSubcatVar,
                         input$tvFilterCheck, region.filter)
            }
         else {                          # UI state is invalid

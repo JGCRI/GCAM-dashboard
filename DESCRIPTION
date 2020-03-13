@@ -15,7 +15,7 @@ Imports:
     RColorBrewer (>= 1.1.2),
     shiny (>= 1.0.0)
 Remotes:
-    JGCRI/rgcam,
+    cypressf/rgcam,
     JGCRI/gcammaptools
 License: GPL-2
 Encoding: UTF-8

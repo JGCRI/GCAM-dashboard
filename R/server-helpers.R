@@ -267,6 +267,35 @@ determineMapset <- function(prjdata, pltscen, query)
     }
 }
 
+rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
+
+#' Color palette for MIT's EPPA model
+#'
+#' This palette should be used for plots by region (whether maps, line plots, or
+#' other types) to ensure consistency across plots and publications.
+#' @export
+eppa_colors <- c(
+    'AFR' = rgb255(255,185,15),
+    'ASI' = rgb255(240, 128, 128),
+    'Australia_NZ' = rgb255(255,193,193),
+    'Brazil' = rgb255(154,205,50),
+    'Canada' = rgb255(224,238,224),
+    'China' = rgb255(255,0,0),
+    'EUR' = rgb255(25,25,112),
+    'IDZ' = rgb255(139, 28, 98),
+    'India' = rgb255(208,32,144),
+    'Japan' = hsv(0.01, 0.75, 0.65),
+    'KOR' = rgb255(205, 92, 92),
+    'LAM' = rgb255(72,209,204),
+    'MES' = rgb255(46,139,87),
+    'Mexico' = rgb255(50,205,50),
+    'REA' = rgb255(188,143,143),
+    'ROE' = rgb255(139,0,0),
+    'Russia' = rgb255(104,34,139),
+    'USA' = rgb255(77,77,77)
+)
+
+
 ### Data wrangling
 
 #' Extract and format data for a plot
@@ -288,14 +317,14 @@ getPlotData <- function(prjdata, query, pltscen, diffscen, key, filtervar=NULL,
     if('region' %in% names(tp)) {
         ## If the data has a region column, put it in the canoncial order given above.
         tp$region <- factor(tp$region,
-                            levels=c(names(gcammaptools::gcam32_colors), '0'),
+                            levels=c(names(eppa_colors), '0'),
                             ordered=TRUE) # convert to ordered factor
     }
     if(!is.null(diffscen)) {
         dp <- getQuery(prjdata, query, diffscen) # 'difference plot'
         if('region' %in% names(dp)) {
             dp$region <- factor(dp$region,
-                                levels=c(names(gcammaptools::gcam32_colors), '0'),
+                                levels=c(names(eppa_colors), '0'),
                                 ordered=TRUE)
         }
     }
@@ -471,7 +500,7 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
         else {
             subcatvar <- toString(subcatvar)
             if(subcatvar=='region')
-                fillpal <- gcammaptools::gcam32_colors
+                fillpal <- eppa_colors
             else {
                 n <- length(unique(pltdata[[subcatvar]]))
                 if(n<3) {

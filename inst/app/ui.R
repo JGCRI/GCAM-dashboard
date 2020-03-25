@@ -46,27 +46,6 @@ shinyUI(fluidPage(
                 verbatimTextOutput('queries')
             ),
 
-            tabPanel('Map View',
-                h3(textOutput('mapName', inline=TRUE),align='center'),
-                plotOutput('mapPlot',height='600px'),
-                sliderInput('mapYear', 'Year', width='80%', min=2005, max=2100, step=5, value=2050,
-                            sep='', animate = TRUE),
-                h3('Options'),
-                selectInput('mapProjection', 'Map Type',
-                            choices=c(Global='global',
-                            USA='usa',
-                            China='china',
-                            Africa='africa',
-                            `Latin America and Caribbean`='lac'),
-                            selected = 'global'),
-               ## placeholders downward to make room for the map projection
-                     ## selector
-                     br(),
-                     br(),
-                     br(),
-                     br()
-            ),
-
             tabPanel('Time View',
                 plotOutput('timePlot', height='600px'),
                 h3('Options'),

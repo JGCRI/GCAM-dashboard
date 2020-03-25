@@ -89,18 +89,6 @@ shinyServer(function(input, output, session) {
             prevSubcat <- if(input$tvSubcatVar %in% catvars) input$tvSubcatVar else 'none'
             updateSelectInput(session, 'tvSubcatVar', choices=c('none', catvars),
                               selected=prevSubcat)
-
-            ## now do the map slider
-            yrlimits <- getQueryYears(prj, scen, query)
-            yrsel <- isolate(input$mapYear)
-            if(yrsel < yrlimits[1])
-                yrsel <- yrlimits[1]
-            else if(yrsel > yrlimits[2])
-                yrsel <- yrlimits[2]
-            else
-                yrsel <- NULL           # NULL means leave it alone
-            updateSliderInput(session, 'mapYear', min=yrlimits[1],
-                              max=yrlimits[2], value=yrsel)
         }
     })
 

@@ -8,6 +8,62 @@ tag.noscen <- '->No scenarios selected<-'     # placeholder when no scenario sel
 #### State variables
 last.region.filter <- NULL
 
+
+#' Load a file into the UI
+#'
+#' Returns the data from the project file, if valid
+#' @param proj Path to the project file
+#' @export
+loadProject2 <- function(proj)
+{
+    if (is.character(proj)) {
+        projFile <- proj
+        if (file.exists(projFile)) {
+            if (file.access(projFile, mode = 6) != 0) {
+                stop("File ", projFile, " exists but lacks either read or write permission.")
+            }
+
+            prjdata <- readFromExcel(projFile)
+
+            if (!exists("prjdata", inherits = FALSE)) {
+                message(paste("File", projFile, "does not contain valid project data."))
+                message("Try loading the file into an R session and verify that it contains the variable 'prjdata'.")
+                stop("Unable to load project file ", projFile)
+            }
+            attr(prjdata, "file") <- projFile
+        }
+        else {
+            prjdata <- list()
+            attr(prjdata, "file") <- projFile
+        }
+    }
+    else {
+        stop("loadProject2: invalid object passed as proj argument; proj must be a filename.")
+    }
+    prjdata
+}
+
+readFromExcel <- function(file) {
+    data <- read_excel(file, col_types = c("guess", "text", "guess", "guess", "guess", "text")) %>%
+        set_names(c("variable", "sector", "Units", "year", "region", "value")) %>%
+        add_column(scenario = "EPA")
+
+    # replace GAMS "Eps" output with 0.
+    # See https://www.gams.com/latest/docs/gamside/special_values.htm
+    data[data$value == "Eps", "value"] <- "0"
+    data$value <- as.numeric(data$value)
+    data$year <- as.numeric(data$year)
+
+    # split single table into list of tables, named by variable
+    # See https://stackoverflow.com/questions/57107721/how-to-name-the-list-of-the-group-split-output-in-dplyr
+    data <- mutate(data, variable = factor(variable, levels = unique(variable)))
+    data <- data %>%
+        group_split(variable, keep = FALSE) %>%
+        setNames(unique(data$variable))
+
+    return(list(EPA = data))
+}
+
 #' Get the name of the project for display
 #'
 #' Returns a place holder string if no project has been loaded yet.
@@ -276,22 +332,22 @@ rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
 #' @export
 eppa_colors <- c(
     'AFR' = rgb255(255,185,15),
-    'ASI' = rgb255(240, 128, 128),
-    'Australia_NZ' = rgb255(255,193,193),
-    'Brazil' = rgb255(154,205,50),
-    'Canada' = rgb255(224,238,224),
-    'China' = rgb255(255,0,0),
+    'ANZ' = rgb255(240, 128, 128),
+    'ASI' = rgb255(255,193,193),
+    'BRA' = rgb255(154,205,50),
+    'CAN' = rgb255(224,238,224),
+    'CHN' = rgb255(255,0,0),
     'EUR' = rgb255(25,25,112),
     'IDZ' = rgb255(139, 28, 98),
-    'India' = rgb255(208,32,144),
-    'Japan' = hsv(0.01, 0.75, 0.65),
+    'IND' = rgb255(208,32,144),
+    'JPN' = hsv(0.01, 0.75, 0.65),
     'KOR' = rgb255(205, 92, 92),
     'LAM' = rgb255(72,209,204),
     'MES' = rgb255(46,139,87),
-    'Mexico' = rgb255(50,205,50),
+    'MEX' = rgb255(50,205,50),
     'REA' = rgb255(188,143,143),
     'ROE' = rgb255(139,0,0),
-    'Russia' = rgb255(104,34,139),
+    'RUS' = rgb255(104,34,139),
     'USA' = rgb255(77,77,77)
 )
 

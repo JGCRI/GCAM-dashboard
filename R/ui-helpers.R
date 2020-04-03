@@ -13,19 +13,19 @@ africa.rgns <- c('AFR')
 
 #' @rdname rgnlists
 #' @export
-north.america.rgns <- c('Canada', 'USA')
+north.america.rgns <- c('CAN', 'USA')
 
 #' @rdname rgnlists
 #' @export
-lac.rgns <- c('Brazil', 'LAM', 'MES', 'Mexico', 'REA', 'ROE')
+lac.rgns <- c('BRA', 'LAM', 'MEX')
 
 #' @rdname rgnlists
 #' @export
-europe.rgns <- c('EUR')
+europe.rgns <- c('EUR', 'MES')
 
 #' @rdname rgnlists
 #' @export
-asiapac.rgns <- c('ASI', 'IDZ', 'Australia_NZ', 'China', 'India', 'Japan', 'KOR', 'Russia')
+asiapac.rgns <- c('ANZ', 'ASI', 'CHN', 'IDZ', 'IND', 'JPN', 'KOR', 'REA', 'ROE', 'RUS')
 
 
 ## available color schemes

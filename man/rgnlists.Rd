@@ -9,7 +9,7 @@
 \alias{europe.rgns}
 \alias{asiapac.rgns}
 \title{Region lists by continent}
-\format{An object of class \code{character} of length 5.}
+\format{An object of class \code{character} of length 1.}
 \usage{
 africa.rgns
 

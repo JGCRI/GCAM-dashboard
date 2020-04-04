@@ -4,8 +4,15 @@
 \alias{getPlotData}
 \title{Extract and format data for a plot}
 \usage{
-getPlotData(prjdata, query, pltscen, diffscen, key, filtervar = NULL,
-  filterset = NULL)
+getPlotData(
+  prjdata,
+  query,
+  pltscen,
+  diffscen,
+  key,
+  filtervar = NULL,
+  filterset = NULL
+)
 }
 \arguments{
 \item{prjdata}{Project data structure}

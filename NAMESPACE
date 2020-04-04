@@ -3,7 +3,6 @@
 export(africa.rgns)
 export(asiapac.rgns)
 export(default.plot)
-export(eppa_colors)
 export(europe.rgns)
 export(getProjectName)
 export(getProjectScenarios)

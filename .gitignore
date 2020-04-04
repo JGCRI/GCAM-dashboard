@@ -8,3 +8,4 @@ rsconnect
 *~
 # Sample data for testing during development
 gcam-sample-project.dat
+packrat/lib*/

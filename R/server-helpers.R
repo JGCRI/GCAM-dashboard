@@ -325,32 +325,6 @@ determineMapset <- function(prjdata, pltscen, query)
 
 rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
 
-#' Color palette for MIT's EPPA model
-#'
-#' This palette should be used for plots by region (whether maps, line plots, or
-#' other types) to ensure consistency across plots and publications.
-#' @export
-eppa_colors <- c(
-    'AFR' = rgb255(255,185,15),
-    'ANZ' = rgb255(240, 128, 128),
-    'ASI' = rgb255(255,193,193),
-    'BRA' = rgb255(154,205,50),
-    'CAN' = rgb255(224,238,224),
-    'CHN' = rgb255(255,0,0),
-    'EUR' = rgb255(25,25,112),
-    'IDZ' = rgb255(139, 28, 98),
-    'IND' = rgb255(208,32,144),
-    'JPN' = hsv(0.01, 0.75, 0.65),
-    'KOR' = rgb255(205, 92, 92),
-    'LAM' = rgb255(72,209,204),
-    'MES' = rgb255(46,139,87),
-    'MEX' = rgb255(50,205,50),
-    'REA' = rgb255(188,143,143),
-    'ROE' = rgb255(139,0,0),
-    'RUS' = rgb255(104,34,139),
-    'USA' = rgb255(77,77,77)
-)
-
 
 ### Data wrangling
 
@@ -373,14 +347,14 @@ getPlotData <- function(prjdata, query, pltscen, diffscen, key, filtervar=NULL,
     if('region' %in% names(tp)) {
         ## If the data has a region column, put it in the canoncial order given above.
         tp$region <- factor(tp$region,
-                            levels=c(names(eppa_colors), '0'),
+                            levels=c(sort(unique(tp$region)), '0'),
                             ordered=TRUE) # convert to ordered factor
     }
     if(!is.null(diffscen)) {
         dp <- getQuery(prjdata, query, diffscen) # 'difference plot'
         if('region' %in% names(dp)) {
             dp$region <- factor(dp$region,
-                                levels=c(names(eppa_colors), '0'),
+                                levels=c(sort(unique(tp$region)), '0'),
                                 ordered=TRUE)
         }
     }
@@ -555,19 +529,15 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
         }
         else {
             subcatvar <- toString(subcatvar)
-            if(subcatvar=='region')
-                fillpal <- eppa_colors
+            n <- length(unique(pltdata[[subcatvar]]))
+            if(n<3) {
+                fillpal <- RColorBrewer::brewer.pal(3,'Set3')
+            }
+            else if(n<=12) {
+                fillpal <- RColorBrewer::brewer.pal(n,'Set3')
+            }
             else {
-                n <- length(unique(pltdata[[subcatvar]]))
-                if(n<3) {
-                    fillpal <- RColorBrewer::brewer.pal(3,'Set3')
-                }
-                else if(n<=12) {
-                    fillpal <- RColorBrewer::brewer.pal(n,'Set3')
-                }
-                else {
-                    fillpal <- grDevices::rainbow(n, 0.8, 0.9)
-                }
+                fillpal <- grDevices::rainbow(n, 0.8, 0.9)
             }
 
             plt + scale_fill_manual(values=fillpal)

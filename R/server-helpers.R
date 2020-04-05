@@ -1,3 +1,8 @@
+library(readxl)
+library(purrr)
+library(tibble)
+library(dplyr)
+
 ### Helper functions for the server side of the app.
 
 ### Conventions:
@@ -44,8 +49,9 @@ loadProject2 <- function(proj)
 }
 
 readFromExcel <- function(file) {
-    data <- read_excel(file, col_types = c("guess", "text", "guess", "guess", "guess", "text")) %>%
-        set_names(c("variable", "sector", "Units", "year", "region", "value")) %>%
+    data <- read_excel(file,
+                       col_types = c("guess", "text", "guess", "guess", "guess", "text"),
+                       col_names = c("variable", "sector", "Units", "year", "region", "value")) %>%
         add_column(scenario = "EPA")
 
     # replace GAMS "Eps" output with 0.

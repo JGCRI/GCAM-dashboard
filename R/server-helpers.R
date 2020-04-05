@@ -2,6 +2,7 @@ library(readxl)
 library(purrr)
 library(tibble)
 library(dplyr)
+library(stringr)
 
 ### Helper functions for the server side of the app.
 
@@ -59,6 +60,10 @@ readFromExcel <- function(file) {
     data[data$value == "Eps", "value"] <- "0"
     data$value <- as.numeric(data$value)
     data$year <- as.numeric(data$year)
+
+    # Replace _ with space in region names
+    # GAMS cannot output region names with spaces in them, but we want them to be human-readable
+    data <- mutate(data, region = str_replace_all(region, "_", " "))
 
     # split single table into list of tables, named by variable
     # See https://stackoverflow.com/questions/57107721/how-to-name-the-list-of-the-group-split-output-in-dplyr

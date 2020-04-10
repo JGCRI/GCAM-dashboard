@@ -3,6 +3,7 @@ library(purrr)
 library(tibble)
 library(dplyr)
 library(stringr)
+library(randomcoloR)
 
 ### Helper functions for the server side of the app.
 
@@ -314,6 +315,16 @@ summarize.unit <- function(unitcol)
     unitcol[which.max(table(unitcol))]
 }
 
+getColorPalette <- function(df, breakdownName)
+{
+    breakdowns <- unique(df[[breakdownName]])
+    num_breakdowns <- length(breakdowns)
+    set.seed(1981)
+    color_palette <- distinctColorPalette(num_breakdowns)
+    names(color_palette) <- breakdowns
+    color_palette
+}
+
 #' Plot values over time as a bar chart
 #' @param prjdata A project data structure
 #' @param query  Name of the query to plot
@@ -355,18 +366,8 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
         }
         else {
             subcatvar <- toString(subcatvar)
-            n <- length(unique(pltdata[[subcatvar]]))
-            if(n<3) {
-                fillpal <- RColorBrewer::brewer.pal(3,'Set3')
-            }
-            else if(n<=12) {
-                fillpal <- RColorBrewer::brewer.pal(n,'Set3')
-            }
-            else {
-                fillpal <- grDevices::rainbow(n, 0.8, 0.9)
-            }
-
-            plt + scale_fill_manual(values=fillpal)
+            getColorPalette(pltdata, subcatvar)
+            plt + scale_fill_manual(values=getColorPalette(pltdata, subcatvar))
         }
     }
 }

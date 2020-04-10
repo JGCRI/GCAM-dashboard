@@ -17,9 +17,7 @@ shinyUI(fluidPage(
       fluidRow(
         column(8,
                selectInput('plotQuery', 'Select Query to Plot',
-                           choices=list())),
-        column(4,
-               checkboxInput('inclSpatial', 'Include Spatial Queries', value=TRUE))
+                           choices=list()))
       ),
       checkboxInput('diffCheck', 'Plot Difference vs Another Scenario'),
       conditionalPanel(

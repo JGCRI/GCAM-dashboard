@@ -176,18 +176,6 @@ uiStateValid <- function(prj, scenario, query)
     }
 }
 
-#' Indicate whether a query is a gridded data set
-#'
-#' @param prj Project data structure
-#' @param scenario Name of the scenario
-#' @param query Name of the query
-#' @export
-isGrid <- function(prj, scenario, query)
-{
-    colnames <- names(getQuery(prj, query, scenario))
-    'lat' %in% colnames && 'lon' %in% colnames
-}
-
 
 #' Get the years for which a query is defined
 #'
@@ -276,26 +264,18 @@ getPlotData <- function(prjdata, query, pltscen, diffscen, key, filtervar=NULL,
         tp <- dplyr::filter_(tp, lazyeval::interp(~y %in% x, y = as.name(filtervar), x = filterset))
     }
 
-    if(!isGrid(prjdata, pltscen, query)) {
-        ## Select the key and year columns, then sum all values with the same
-        ## key.  Force the sum to have the name 'value'. Skip this step for
-        ## grid data.
-        if(!is.null(key) &&
-           toString(key) %in% (tp %>% names %>% setdiff(c('year', 'Units')))
-           ) {
-          tp <- dplyr::group_by_(tp, key, 'year', 'Units') %>%
-                dplyr::summarise(value = sum(value))
-        }
-        else {
-          tp <- dplyr::group_by_(tp, 'year', 'Units') %>%
-                dplyr::summarise(value = sum(value))
-        }
+    ## Select the key and year columns, then sum all values with the same
+    ## key.  Force the sum to have the name 'value'.
+    if(!is.null(key) &&
+       toString(key) %in% (tp %>% names %>% setdiff(c('year', 'Units')))
+       ) {
+      tp <- dplyr::group_by_(tp, key, 'year', 'Units') %>%
+            dplyr::summarise(value = sum(value))
     }
     else {
-        ## for gridded data, just get the lat, lon, year, data, and units
-        tp <- dplyr::select_(tp, .dots=c('lat', 'lon', 'value', 'year', 'Units'))
+      tp <- dplyr::group_by_(tp, 'year', 'Units') %>%
+            dplyr::summarise(value = sum(value))
     }
-
     ## Occasionally you get a region with "0.0" for the unit string because
     ## most of its entries were zero. Fix these so that the column all has the
     ## same unit.
@@ -340,9 +320,6 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
 {
     if(is.null(prjdata)) {
         default.plot()
-    }
-    else if(isGrid(prjdata, scen, query)) {
-        default.plot("Can't plot time series of spatial grid data.")
     }
     else {
         if(filter)

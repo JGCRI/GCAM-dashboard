@@ -305,7 +305,7 @@ getColorPalette <- function(subcategory_values)
 {
     set.seed(1890)
     color_palette <- distinctColorPalette(length(subcategory_values))
-    names(color_palette) <- subcategory_values
+    names(color_palette) <- sort(subcategory_values)
     color_palette
 }
 

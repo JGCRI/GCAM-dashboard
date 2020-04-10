@@ -8,6 +8,7 @@ library(purrr)
 library(GCAMdashboard)
 library(tibble)
 library(stringr)
+library(randomcoloR)
 
 options(shiny.maxRequestSize=512*1024^2) # 512 MB max file upload size.
 

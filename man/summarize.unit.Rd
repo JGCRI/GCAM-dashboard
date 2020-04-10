@@ -5,7 +5,7 @@
 \title{Summarize the unit column of a GCAM data frame by taking the most common
 entry.}
 \usage{
-summarize.unit(unitcol)
+\method{summarize}{unit}(unitcol)
 }
 \arguments{
 \item{unitcol}{Character vector of unit names.}

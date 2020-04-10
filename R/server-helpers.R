@@ -220,120 +220,6 @@ default.plot <- function(label.text='No data selected')
         theme_minimal()
 }
 
-#' Plot GCAM data on a global or regional map
-#'
-#' @param prjdata Project data file
-#' @param query Name of the query to plot
-#' @param pltscen Name of the scenario to plot
-#' @param diffscen Name of the scenario to difference against pltscen, or NULL if none
-#' @param projselect Projection to use for the map
-#' @param year Year to plot data for
-#' @importFrom ggplot2 scale_fill_gradientn guides
-#' @importFrom gcammaptools add_region_ID plot_GCAM plot_GCAM_grid
-#' @export
-plotMap <- function(prjdata, query, pltscen, diffscen, projselect, year)
-{
-
-    if(is.null(prjdata)) {
-        default.plot()
-    }
-    else if(is.null(pltscen) ||
-            !pltscen %in% listScenarios(prjdata) ||
-            (!is.null(diffscen) && pltscen==diffscen) ||
-            query==tag.noscen) {
-        ## These condition(s) all indicate a transitional state, so don't do anything.
-        ggplot2::last_plot()
-    }
-    else {
-        scens <- paste(c(pltscen, diffscen), collapse=', ')
-
-        is.diff <- !is.null(diffscen)      # We'll do a couple of things differently for a diff plot
-
-        mapset <- determineMapset(prjdata, pltscen, query)
-
-        if(isGrid(prjdata, pltscen, query)) {
-            key <- c('lat', 'lon')
-        }
-        else {
-            key <- if(mapset==gcammaptools::basin235) 'basin' else 'region'
-        }
-        pltdata <- getPlotData(prjdata, query, pltscen, diffscen, key)
-
-        ## map plot is expecting the column coresponding to the map locations to
-        ## be called "region", so if we're working with water basins, we have to
-        ## rename it.
-        if(mapset==gcammaptools::basin235 && 'basin' %in% names(pltdata))
-            pltdata$region <- pltdata$basin
-
-        mapLimits <- getMapLimits(pltdata, is.diff)
-        unitstr <- summarize.unit(pltdata$Units)
-
-        # Filter the data to only the selected year
-        pltdata <- dplyr::filter_(pltdata, paste("year ==", year))
-
-        map.params <- getMapParams(projselect) # map projection and extent
-        pal <- getMapPalette(is.diff)   # color palette
-        datacol <- 'value' # name of the column with the data.
-
-        # Determine whether to use basin or region map, and which level of detail
-        simplify_map <- isTRUE(all.equal(map.params$ext, gcammaptools::EXTENT_WORLD))
-        if(mapset==gcammaptools::rgn32 && simplify_map)
-            map.dat <- gcammaptools::map.rgn32.simple    # rgn32 and world extent
-        else if(mapset==gcammaptools::rgn32)
-            map.dat <- gcammaptools::map.rgn32           # rgn32 and smaller extent
-        else if(simplify_map)
-            map.dat <- gcammaptools::map.basin235.simple # basin235 and world extent
-        else
-            map.dat <- gcammaptools::map.basin235        # basin235 and smaller extent
-
-
-        if('region' %in% names(pltdata)) {
-            # This is a table of data by region
-            pltdata <- add_region_ID(pltdata, lookupfile = mapset, drops = mapset)
-
-            plt <- plot_GCAM(map.dat, col = datacol, proj = map.params$proj,
-                             proj_type = map.params$proj_type, extent = map.params$ext,
-                             legend = TRUE, gcam_df = pltdata, gcam_key = 'id',
-                             mapdata_key='region_id', zoom = map.params$zoom)
-
-        }
-        else if(isGrid(prjdata, pltscen, query)) {
-
-            plt <- plot_GCAM_grid(pltdata, datacol, map = map.dat,
-                                  proj_type = map.params$proj_type,
-                                  proj = map.params$proj, extent = map.params$ext,
-                                  zoom = map.params$zoom, legend = TRUE) +
-                scale_fill_gradientn(colors = pal, limits = mapLimits, name = unitstr)
-        } else {
-            plt <- default.plot(label.text = "No geographic data available for this query")
-        }
-        ## set up elements that are common to both kinds of plots here
-        plt + guides(fill=ggplot2::guide_colorbar(title.position='bottom', title.hjust=0.5,
-                     barwidth=ggplot2::unit(4,'in')))
-    }
-}
-
-#' Figure out which map to plot a query on.
-#'
-#' Right now we assume that if the query table contains a 'basin' column, then
-#' we want to plot on the basin map; otherwise we plot on the region map.
-#' @param prjdata Project data structure
-#' @param pltscen Name of the scenario to plot
-#' @param query Name of the GCAM query to plot
-#' @return Base map suitable for plotting this data
-determineMapset <- function(prjdata, pltscen, query)
-{
-    tp <- rgcam::getQuery(prjdata, query, pltscen)
-    if('basin' %in% names(tp)) {
-        ## mapping the 235 basins
-        mapset <- gcammaptools::basin235
-    }
-    else {
-        ## mapping the 32 regions
-        mapset <- gcammaptools::rgn32
-    }
-}
-
 rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
 
 
@@ -354,20 +240,8 @@ getPlotData <- function(prjdata, query, pltscen, diffscen, key, filtervar=NULL,
                         filterset=NULL)
 {
     tp <- getQuery(prjdata, query, pltscen) # 'table plot'
-
-    if('region' %in% names(tp)) {
-        ## If the data has a region column, put it in the canoncial order given above.
-        tp$region <- factor(tp$region,
-                            levels=c(sort(unique(tp$region)), '0'),
-                            ordered=TRUE) # convert to ordered factor
-    }
     if(!is.null(diffscen)) {
         dp <- getQuery(prjdata, query, diffscen) # 'difference plot'
-        if('region' %in% names(dp)) {
-            dp$region <- factor(dp$region,
-                                levels=c(sort(unique(tp$region)), '0'),
-                                ordered=TRUE)
-        }
     }
     else {
         dp <- NULL
@@ -429,62 +303,6 @@ getPlotData <- function(prjdata, query, pltscen, diffscen, key, filtervar=NULL,
     ## same unit.
     tp$Units <- summarize.unit(tp$Units)
     tp
-}
-
-#' Get projection parameters for the pre-defined projections
-#'
-#' Valid inputs are "global", "lac" (Latin America and Caribbean), "usa",
-#' "china", and "africa".
-#'
-#' @param projselect Name of the predefined projection
-#' @keywords internal
-getMapParams <- function(projselect)
-{
-    if(projselect == 'global') {
-        list(proj=gcammaptools::eck3, ext=gcammaptools::EXTENT_WORLD)
-    }
-    else if(projselect == 'usa') {
-        list(proj=gcammaptools::na_aea, ext=gcammaptools::EXTENT_USA)
-    }
-    else if(projselect == 'china') {
-        list(proj=gcammaptools::ch_aea, ext=gcammaptools::EXTENT_CHINA)
-    }
-    else if(projselect == 'africa') {
-        list(proj=gcammaptools::af_ortho, ext=gcammaptools::EXTENT_AFRICA, zoom=10)
-    }
-    else if(projselect == 'lac') {
-        list(proj=7567, proj_type='SR-ORG', ext=gcammaptools::EXTENT_LA, zoom=8)
-    }
-}
-
-#' Select a suitable color palette
-#' @param is.diff Boolean indicating whether the plot is a difference plot
-#' @keywords internal
-getMapPalette <- function(is.diff)
-{
-    if(is.diff) {
-        RColorBrewer::brewer.pal(9, 'RdBu')
-    } else {
-        RColorBrewer::brewer.pal(9,'Blues')
-    }
-}
-
-#' Select suitable scale limits for a plot
-#'
-#' @param pltdata The data being plotted
-#' @param is.diff Boolean indicating whether the plot is a difference plot
-#' @keywords internal
-getMapLimits <- function(pltdata, is.diff)
-{
-    limits <- range(pltdata['value'], na.rm=TRUE)
-    if(is.diff) {
-        ## For a difference plot, force the limits to be balanced on either side of zero
-        mag <- max(abs(limits))
-        c(-mag, mag)
-    }
-    else {
-        limits
-    }
 }
 
 #' Summarize the unit column of a GCAM data frame by taking the most common

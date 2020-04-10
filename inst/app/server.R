@@ -6,6 +6,8 @@ library(dplyr)
 library(readr)
 library(purrr)
 library(GCAMdashboard)
+library(tibble)
+library(stringr)
 
 options(shiny.maxRequestSize=512*1024^2) # 512 MB max file upload size.
 
@@ -62,7 +64,7 @@ shinyServer(function(input, output, session) {
                 ## Filter out grid queries, if requested.
                 nonGrid <- sapply(new.queries,
                                   function(q) {!isGrid(rFileinfo()$project.data,
-                                                      input$plotScenario, q)})
+                                                       input$plotScenario, q)})
                 new.queries <- new.queries[nonGrid]
             }
             if(!identical(queries,new.queries)) {
@@ -71,7 +73,7 @@ shinyServer(function(input, output, session) {
                 ## preserve selected value if possible
                 sel <- input$plotQuery
                 if(!(sel %in% queries))
-                   sel <- NULL          # allow update to reset selection
+                    sel <- NULL          # allow update to reset selection
                 updateSelectInput(session, 'plotQuery', choices=queries,
                                   selected=sel)
             }
@@ -117,75 +119,51 @@ shinyServer(function(input, output, session) {
         getScenarioQueries(rFileinfo, input$scenarioInput, concat='\n')
     })
 
-    output$mapPlot <- renderPlot({
-        if(uiStateValid( rFileinfo()$project.data, input$plotScenario,
-                        input$plotQuery )) {
-            diffscen <- if(input$diffCheck) {
-                input$diffScenario
-            } else {
-                  NULL
-              }
-            year <- input$mapYear
-            plotMap(rFileinfo()$project.data, input$plotQuery,
-                    input$plotScenario, diffscen, input$mapProjection, year)
-        }
-        else {
-            default.plot('Updating')
-        }
-    })
-
-    output$mapName <- renderText({input$plotQuery})
-
     output$timePlot <- renderPlot({
         prj <- rFileinfo()$project.data
         scen <- input$plotScenario
         query <- input$plotQuery
         if(uiStateValid(prj, scen, query)) {
-               diffscen <- if(input$diffCheck) {
-                   input$diffScenario
-               } else {
-                   NULL
-               }
-               tvSubcatVar <- input$tvSubcatVar
+            diffscen <- if(input$diffCheck) {
+                input$diffScenario
+            } else {
+                NULL
+            }
+            tvSubcatVar <- input$tvSubcatVar
 
-               region.filter <- c(input$tvRgns1, input$tvRgns2, input$tvRgns3,
-                                  input$tvRgns4, input$tvRgns5)
-               last.region.filter <<- region.filter
+            region.filter <- input$tvRgns
+            last.region.filter <<- region.filter
 
-               # If the query has changed, the value of the subcategory selector
-               # may not be valid anymore. Change it to none.
-               if(!tvSubcatVar %in% names(getQuery(prj, query, scen))) {
-                  tvSubcatVar <- 'none'
-               }
+            # If the query has changed, the value of the subcategory selector
+            # may not be valid anymore. Change it to none.
+            if(!tvSubcatVar %in% names(getQuery(prj, query, scen))) {
+                tvSubcatVar <- 'none'
+            }
 
-               plotTime(prj, query, scen, diffscen, tvSubcatVar,
-                        input$tvFilterCheck, region.filter)
-           }
+            plotTime(prj, query, scen, diffscen, tvSubcatVar,
+                     input$tvFilterCheck, region.filter)
+        }
         else {                          # UI state is invalid
             default.plot('Updating')
         }
     })
 
-    ## update region controls on time view panel
-    ## None of this is necessary anymore, since we hardwired the region lists,
-    ## but I'm keeping it around for now in case we want to allow for the
-    ## possibility that a data set has custom regions.
-    ## observe({
-    ##     prj <- rFileinfo()$project.data
-    ##     scen <- input$plotScenario
-    ##     query <- input$plotQuery
-    ##     if(uiStateValid(prj, scen, query)) {
-    ##         tbl <- getQuery(prj,query,scen)
-    ##         rgns <- unique(tbl$region) %>% sort
-    ##         updateCheckboxGroupInput(session, 'tvRgns', choices = rgns,
-    ##                                  selected = last.region.filter)
-    ##     }
-    ##})
-### Debugging
-    ## observe({
-    ##             print('****************Change of Input****************')
-    ##             cat('plotScenario: ', input$plotScenario, '\n')
-    ##             cat('diffScenario: ', input$diffScenario, '\n')
-    ##             cat('plotQuery: ', input$plotQuery, '\n')
-    ##         })
+    observe({
+        prj <- rFileinfo()$project.data
+        scen <- input$plotScenario
+        query <- input$plotQuery
+        if(uiStateValid(prj, scen, query)) {
+            tbl <- getQuery(prj,query,scen)
+            rgns <- unique(tbl$region) %>% sort
+            updateCheckboxGroupInput(session, 'tvRgns', choices = rgns,
+                                     selected = last.region.filter)
+        }
+    })
+    # Debugging
+    observe({
+        print('****************Change of Input****************')
+        cat('plotScenario: ', input$plotScenario, '\n')
+        cat('diffScenario: ', input$diffScenario, '\n')
+        cat('plotQuery: ', input$plotQuery, '\n')
+    })
 })

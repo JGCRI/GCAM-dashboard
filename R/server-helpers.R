@@ -295,13 +295,17 @@ summarize.unit <- function(unitcol)
     unitcol[which.max(table(unitcol))]
 }
 
-getColorPalette <- function(df, breakdownName)
+getSubcategoryValues <- function(df, subcategory_name)
 {
-    breakdowns <- unique(df[[breakdownName]])
-    num_breakdowns <- length(breakdowns)
-    set.seed(1981)
-    color_palette <- distinctColorPalette(num_breakdowns)
-    names(color_palette) <- breakdowns
+    subcategory_values <- unique(df[[subcategory_name]])
+    subcategory_values
+}
+
+getColorPalette <- function(subcategory_values)
+{
+    set.seed(1890)
+    color_palette <- distinctColorPalette(length(subcategory_values))
+    names(color_palette) <- subcategory_values
     color_palette
 }
 
@@ -342,9 +346,11 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
             plt
         }
         else {
-            subcatvar <- toString(subcatvar)
-            getColorPalette(pltdata, subcatvar)
-            plt + scale_fill_manual(values=getColorPalette(pltdata, subcatvar))
+            unfiltered_pltdata <- getPlotData(prjdata, query, scen, diffscen, subcatvar,
+                                              NULL, NULL)
+            subcategory_values <- getSubcategoryValues(unfiltered_pltdata, subcatvar)
+            color_palette <- getColorPalette(subcategory_values)
+            plt + scale_fill_manual(values = color_palette)
         }
     }
 }

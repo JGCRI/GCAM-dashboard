@@ -220,9 +220,6 @@ default.plot <- function(label.text='No data selected')
         theme_minimal()
 }
 
-rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
-
-
 ### Data wrangling
 
 #' Extract and format data for a plot

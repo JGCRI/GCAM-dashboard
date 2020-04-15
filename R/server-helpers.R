@@ -61,15 +61,19 @@ loadProject2 <- function(proj)
 
 readFromExcel <- function(file) {
     data <- read_excel(file,
-                       col_types = c("guess", "text", "guess", "guess", "guess", "text"),
-                       col_names = c("variable", "sector", "Units", "year", "region", "value")) %>%
+                       col_types = c("guess", "text", "text", "guess", "guess", "guess", "text"),
+                       col_names = c("variable", "sector", "order", "Units", "year", "region", "value")) %>%
         add_column(scenario = "EPA")
 
     # replace GAMS "Eps" output with 0.
     # See https://www.gams.com/latest/docs/gamside/special_values.htm
     data[data$value == "Eps", "value"] <- "0"
+
+    # Convert numeric columns to numeric
+    # I'm not able to read them as numeric without getting tons of warnings
     data$value <- as.numeric(data$value)
     data$year <- as.numeric(data$year)
+    data$order <- as.numeric(data$order)
 
     # Replace _ with space in region names
     # GAMS cannot output region names with spaces in them, but we want them to be human-readable
@@ -247,7 +251,7 @@ getPlotData <- function(prjdata, query, pltscen, diffscen, key, filtervar=NULL,
         ## Join the data sets first so that we can be sure that we have matched
         ## the rows and columns correctly
         varnames <- names(tp)
-        mergenames <- varnames[!varnames %in% c('scenario', 'Units', 'value')]
+        mergenames <- varnames[!varnames %in% c('scenario', 'order', 'Units', 'value')]
 
         joint.data <- merge(tp, dp, by=mergenames, all=TRUE)
         if(anyNA(joint.data))

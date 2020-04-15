@@ -86,7 +86,7 @@ shinyServer(function(input, output, session) {
         if(uiStateValid(prj, scen, query)) {
             ## Assumes that a particular query has the same columns in all scenarios
             querycols <- getQuery(prj, query, scen) %>% names
-            catvars <- querycols[!querycols %in% c('scenario', 'Units', 'year', 'value')]
+            catvars <- querycols[!querycols %in% c('scenario', 'order', 'Units', 'year', 'value')]
             prevSubcat <- if(input$tvSubcatVar %in% catvars) input$tvSubcatVar else 'none'
             updateSelectInput(session, 'tvSubcatVar', choices=c('none', catvars),
                               selected=prevSubcat)

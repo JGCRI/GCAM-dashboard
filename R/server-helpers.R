@@ -340,7 +340,9 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
                                filtervar, rgns)
 
         plt <- ggplot(pltdata, aes_string('year','value', fill=subcatvar)) +
-          geom_bar(stat='identity') + theme_minimal() + ylab(pltdata$Units)
+          geom_bar(stat='identity') +
+          theme_minimal(base_size = 16) +
+          ylab(pltdata$Units)
 
         if(is.null(subcatvar)) {
             plt

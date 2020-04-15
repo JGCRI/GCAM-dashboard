@@ -18,7 +18,6 @@ shinyServer(function(input, output, session) {
     ## Set up some UI state
     scenarios <- ""
     queries <- ""
-    settings <- list()
 
     ## Get the new data file on upload
     rFileinfo <- reactive({
@@ -26,15 +25,15 @@ shinyServer(function(input, output, session) {
         if(is.null(fileinfo)) {
             project.filename <- "Default data"
             project.data <-loadDefault()
-            settings <- loadDefaultProjectSettings()
+            project.settings <- loadDefaultProjectSettings()
         }
         else {
             project.data <- loadProject2(fileinfo$datapath)   # should be only one file
             project.filename <- fileinfo$name
-            settings <- loadProjectSettings(fileinfo$datapath)
+            project.settings <- loadProjectSettings(fileinfo$datapath)
         }
         updateSelectInput(session, 'scenarioInput', choices=listScenarios(project.data))
-        list(project.filename=project.filename, project.data=project.data)
+        list(project.filename=project.filename, project.data=project.data, project.settings=project.settings)
     })
 
     ## Update controls on sidebar in response to user selections
@@ -112,8 +111,11 @@ shinyServer(function(input, output, session) {
 
     output$timePlot <- renderPlot({
         prj <- rFileinfo()$project.data
+        settings <- rFileinfo()$project.settings
         scen <- input$plotScenario
         query <- input$plotQuery
+        plot_type <- settings[[query]]$type
+
         if(uiStateValid(prj, scen, query)) {
             diffscen <- if(input$diffCheck) {
                 input$diffScenario
@@ -131,7 +133,7 @@ shinyServer(function(input, output, session) {
                 tvSubcatVar <- 'none'
             }
 
-            plotTime(prj, query, scen, diffscen, tvSubcatVar,
+            plotTime(prj, plot_type, query, scen, diffscen, tvSubcatVar,
                      input$tvFilterCheck, region.filter)
         }
         else {                          # UI state is invalid

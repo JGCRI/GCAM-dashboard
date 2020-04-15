@@ -4,10 +4,12 @@
 \alias{plotTime}
 \title{Plot values over time as a bar chart}
 \usage{
-plotTime(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
+plotTime(prjdata, plot_type, query, scen, diffscen, subcatvar, filter, rgns)
 }
 \arguments{
 \item{prjdata}{A project data structure}
+
+\item{plot_type}{The type to plot: stacked or line}
 
 \item{query}{Name of the query to plot}
 

@@ -78,9 +78,10 @@ loadProjectSettings <- function(file) {
               sheet = "query",
               cell_cols("A:C"),
               col_names = c("query", "order", "type")) %>%
-    mutate(order = as.integer(order)) %>%
-    mutate(query = as.factor(query)) %>%
-    mutate(type = as.factor(type))
+      mutate(order = as.integer(order)) %>%
+      mutate(query = as.factor(query)) %>%
+      mutate(type = as.factor(type)) %>%
+      arrange(query)
 
     settings %>%
       group_split(query, keep = FALSE) %>%
@@ -362,6 +363,7 @@ getColorPalette <- function(subcategory_values)
 
 #' Plot values over time as a bar chart
 #' @param prjdata A project data structure
+#' @param plot_type The type to plot: stacked or line
 #' @param query  Name of the query to plot
 #' @param scen  Name of the scenario to plot
 #' @param diffscen  Name of the difference scenario, or NULL if none
@@ -369,9 +371,9 @@ getColorPalette <- function(subcategory_values)
 #' @param filter  If TRUE, then filter to regions in the rgns argument
 #' @param rgns  Regions to filter to, if filter is TRUE.
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes_string geom_bar theme_minimal ylab scale_fill_manual
+#' @importFrom ggplot2 ggplot aes_string geom_bar geom_line theme_minimal ylab scale_fill_manual scale_color_manual
 #' @export
-plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
+plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filter, rgns)
 {
     if(is.null(prjdata)) {
         default.plot()
@@ -390,10 +392,15 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
         pltdata <- getPlotData(prjdata, query, scen, diffscen, subcatvar,
                                filtervar, rgns)
 
-        plt <- ggplot(pltdata, aes_string('year','value', fill=subcatvar)) +
-          geom_bar(stat='identity') +
+        plt <- ggplot(pltdata, aes_string('year','value', fill=subcatvar, color=subcatvar)) +
           theme_minimal(base_size = 16) +
           ylab(pltdata$Units)
+
+        if (is.null(plot_type) || plot_type == "stacked" || is.null(subcatvar) || subcatvar != "region") {
+          plt <- plt + geom_bar(stat='identity')
+        } else {
+          plt <- plt + geom_line(size = 1)
+        }
 
         if(is.null(subcatvar)) {
             plt
@@ -403,7 +410,9 @@ plotTime <- function(prjdata, query, scen, diffscen, subcatvar, filter, rgns)
                                               NULL, NULL)
             subcategory_values <- getSubcategoryValues(unfiltered_pltdata, subcatvar)
             color_palette <- getColorPalette(subcategory_values)
-            plt + scale_fill_manual(values = color_palette)
+            plt +
+              scale_fill_manual(values = color_palette) +
+              scale_color_manual(values = color_palette)
         }
     }
 }

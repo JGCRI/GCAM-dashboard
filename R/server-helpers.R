@@ -15,6 +15,10 @@ tag.noscen <- '->No scenarios selected<-'     # placeholder when no scenario sel
 #### State variables
 last.region.filter <- NULL
 
+#' Load default data into UI
+#'
+#' Returns the data from the default data file
+#' @export
 loadDefault <- function()
 {
   file <- system.file('data/out_v-ref_p0_r0_gdpg-m_aeeg-m_sekl-m_dash.xls', package = 'GCAMdashboard')

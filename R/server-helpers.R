@@ -24,6 +24,15 @@ loadDefault <- function()
   loadProject2('./data/out_v-ref_p0_r0_gdpg-m_aeeg-m_sekl-m_dash.xls')
 }
 
+#' Load the default project file into the settings
+#'
+#' Returns the settings from the default project file
+#' @export
+loadDefaultProjectSettings <- function()
+{
+  loadProjectSettings('./data/out_v-ref_p0_r0_gdpg-m_aeeg-m_sekl-m_dash.xls')
+}
+
 
 #' Load a file into the UI
 #'
@@ -57,6 +66,25 @@ loadProject2 <- function(proj)
         stop("loadProject2: invalid object passed as proj argument; proj must be a filename.")
     }
     prjdata
+}
+
+#' Load a file into the settings
+#'
+#' Returns the settings from the project file
+#' @param proj Path to the project file
+#' @export
+loadProjectSettings <- function(file) {
+    settings <- read_excel(file,
+              sheet = "query",
+              cell_cols("A:C"),
+              col_names = c("query", "order", "type")) %>%
+    mutate(order = as.integer(order)) %>%
+    mutate(query = as.factor(query)) %>%
+    mutate(type = as.factor(type))
+
+    settings %>%
+      group_split(query, keep = FALSE) %>%
+      set_names(unique(settings$query))
 }
 
 readFromExcel <- function(file) {

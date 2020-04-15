@@ -18,6 +18,7 @@ shinyServer(function(input, output, session) {
     ## Set up some UI state
     scenarios <- ""
     queries <- ""
+    settings <- list()
 
     ## Get the new data file on upload
     rFileinfo <- reactive({
@@ -25,10 +26,12 @@ shinyServer(function(input, output, session) {
         if(is.null(fileinfo)) {
             project.filename <- "Default data"
             project.data <-loadDefault()
+            settings <- loadDefaultProjectSettings()
         }
         else {
             project.data <- loadProject2(fileinfo$datapath)   # should be only one file
             project.filename <- fileinfo$name
+            settings <- loadProjectSettings(fileinfo$datapath)
         }
         updateSelectInput(session, 'scenarioInput', choices=listScenarios(project.data))
         list(project.filename=project.filename, project.data=project.data)

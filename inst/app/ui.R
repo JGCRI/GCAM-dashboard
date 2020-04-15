@@ -30,16 +30,10 @@ shinyUI(fluidPage(
     # main display area
     mainPanel(
       plotOutput('timePlot', height='600px'),
-      h3('Options'),
-      selectInput('tvSubcatVar', 'Break totals into subcategories by:',
+      selectInput('tvSubcatVar', 'Plot subcategory',
                   choices=c('none','region')),
-      h4('Regions'),
-      fluidRow(
-        checkboxInput('tvFilterCheck',
-                      'Limit plot to selected regions')),
-      fluidRow(
-        column(1,checkboxGroupInput('tvRgns', 'Regions', choices=c()))
-      )
+      checkboxInput('tvFilterCheck', 'Limit plot to selected regions'),
+      checkboxGroupInput('tvRgns', 'Regions', choices=c())
     ) #  main Panel
   )   # sidebar layout
 ))

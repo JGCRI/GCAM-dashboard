@@ -21,7 +21,7 @@ last.region.filter <- NULL
 #' @export
 loadDefault <- function()
 {
-  file <- system.file('data/out_v-ref_p0_r0_gdpg-m_aeeg-m_sekl-m_dash.xls', package = 'GCAMdashboard')
+  file <- system.file('data', 'out_v-ref_p0_r0_gdpg-m_aeeg-m_sekl-m_dash.xls', package = 'GCAMdashboard')
   loadProject2(file)
 }
 

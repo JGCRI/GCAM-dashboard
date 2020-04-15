@@ -23,14 +23,14 @@ shinyServer(function(input, output, session) {
     rFileinfo <- reactive({
         fileinfo <- input$projectFile
         if(is.null(fileinfo)) {
-            project.filename <- NULL
-            project.data <- NULL
+            project.filename <- "Default data"
+            project.data <-loadDefault()
         }
         else {
             project.data <- loadProject2(fileinfo$datapath)   # should be only one file
             project.filename <- fileinfo$name
-            updateSelectInput(session, 'scenarioInput', choices=listScenarios(project.data))
         }
+        updateSelectInput(session, 'scenarioInput', choices=listScenarios(project.data))
         list(project.filename=project.filename, project.data=project.data)
     })
 

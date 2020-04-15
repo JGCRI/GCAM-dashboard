@@ -282,8 +282,18 @@ getPlotData <- function(prjdata, query, pltscen, diffscen, key, filtervar=NULL,
     if(!is.null(key) &&
        toString(key) %in% (tp %>% names %>% setdiff(c('year', 'Units')))
        ) {
-      tp <- dplyr::group_by_(tp, key, 'year', 'Units') %>%
-            dplyr::summarise(value = sum(value))
+      if (any(is.na(tp$order)) || key != "sector") {
+        # Do not enforce any special ordering unless we're breaking down by sector and have
+        # numbers in the order column
+        tp <- dplyr::group_by_(tp, key, 'year', 'Units') %>%
+              dplyr::summarise(value = sum(value))
+      } else {
+        ordered_subcategories <- unique(arrange(tp, desc(order))[[key]])
+        tp <- tp %>%
+          dplyr::mutate(!!key := factor(!!key, levels = ordered_subcategories, ordered = TRUE))
+          dplyr::group_by_(tp, key, 'year', 'Units') %>%
+          dplyr::summarise(value = sum(value), order = first(order))
+      }
     }
     else {
       tp <- dplyr::group_by_(tp, 'year', 'Units') %>%

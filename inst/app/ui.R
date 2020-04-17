@@ -16,7 +16,7 @@ shinyUI(fluidPage(
                selectInput('plotScenario', 'Select Scenario to Plot', choices=list()))),
       fluidRow(
         column(8,
-               selectInput('plotQuery', 'Select Query to Plot',
+               selectInput('plotQuery', 'Select Data to Plot',
                            choices=list()))
       ),
       checkboxInput('diffCheck', 'Plot Difference vs Another Scenario'),
@@ -30,7 +30,7 @@ shinyUI(fluidPage(
     # main display area
     mainPanel(
       plotOutput('timePlot', height='600px'),
-      selectInput('tvSubcatVar', 'Plot subcategory',
+      selectInput('tvSubcatVar', 'Break plot down by:',
                   choices=c('none','region')),
       checkboxInput('tvFilterCheck', 'Limit plot to selected regions'),
       checkboxGroupInput('tvRgns', 'Regions', choices=c())

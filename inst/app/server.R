@@ -79,9 +79,8 @@ shinyServer(function(input, output, session) {
     })
 
     observe({
-        ## update the subcategory selector on the time value plot and the limits
-        ## on the time slider on the map plot.  Only do this when the selected
-        ## plot query changes.
+        ## update the subcategory selector on the time value plot.
+        ## Only do this when the selected plot query changes.
         scen <- isolate(input$plotScenario)
         prj <- isolate(rFileinfo()$project.data)
         query <- input$plotQuery

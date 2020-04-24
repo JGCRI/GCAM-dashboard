@@ -74,7 +74,7 @@ loadProject2 <- function(proj)
 #' @param proj Path to the project file
 #' @export
 loadProjectSettings <- function(file) {
-    settings <- read_excel(file,
+    read_excel(file,
               sheet = "query",
               cell_cols("A:C"),
               col_names = c("query", "order", "type")) %>%
@@ -83,10 +83,6 @@ loadProjectSettings <- function(file) {
       mutate(type = as.factor(type)) %>%
       arrange(query) %>%
       distinct(query, .keep_all = TRUE)
-
-    settings %>%
-      group_split(query, keep = FALSE) %>%
-      set_names(unique(settings$query))
 }
 
 readFromExcel <- function(file) {

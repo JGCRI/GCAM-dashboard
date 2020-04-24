@@ -113,7 +113,7 @@ shinyServer(function(input, output, session) {
         settings <- rFileinfo()$project.settings
         scen <- input$plotScenario
         query <- input$plotQuery
-        plot_type <- settings[[query]]$type
+        plot_type <- filter(settings, query == !!query)$type
 
         if(uiStateValid(prj, scen, query)) {
             diffscen <- if(input$diffCheck) {

@@ -157,6 +157,7 @@ getProjectScenarios <- function(rFileinfo, concat=NULL)
 getScenarioQueries <- function(rFileinfo, scenarios, concat=NULL)
 {
     prj <- rFileinfo()$project.data
+    settings <- rFileinfo()$project.settings
     if(is.null(prj)) {
         if(is.null(concat))
             ''                          # probably not intended for display
@@ -170,17 +171,26 @@ getScenarioQueries <- function(rFileinfo, scenarios, concat=NULL)
             tag.noscen                  # probably intended for display
     }
     else {
-        tryCatch(
+        queries <- tryCatch(
             lapply(scenarios, . %>% rgcam::listQueries(prj, .)) %>%
-                Reduce(intersect,.) %>% sort %>%
-                    paste(collapse=concat),
+            Reduce(intersect,.) %>%
+            sort %>%
+            paste(collapse=concat),
             ## errors in the pipeline above are caused by selecting a new data
             ## set that doesn't contain the current scenario.  The problem will
             ## clear up once the scenario selector is repopulated.
             error = function(e) {
                 if(is.null(concat)) '' else tag.noscen
             })
+        tibble(query = queries) %>%
+        left_join(settings) %>%
+        arrange(order, query) %>%
+        pull(query)
     }
+}
+
+getQueryOrder <- function(queries, settings) {
+  settings[[query]][[0]]$order
 }
 
 #' Indicate whether the UI is in an obviously invalid state.

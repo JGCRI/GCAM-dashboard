@@ -81,7 +81,8 @@ loadProjectSettings <- function(file) {
       mutate(order = as.integer(order)) %>%
       mutate(query = as.factor(query)) %>%
       mutate(type = as.factor(type)) %>%
-      arrange(query)
+      arrange(query) %>%
+      distinct(query, .keep_all = TRUE)
 
     settings %>%
       group_split(query, keep = FALSE) %>%

@@ -11,27 +11,19 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       fileInput('projectFile', 'EPPA Project Data File'),
-      fluidRow(
-        column(8,
-               selectInput('plotScenario', 'Select Scenario to Plot', choices=list()))),
-      fluidRow(
-        column(8,
-               selectInput('plotQuery', 'Select Data to Plot',
-                           choices=list()))
-      ),
+      selectInput('plotScenario', 'Select Scenario to Plot', choices=list()),
+      selectInput('plotQuery', 'Select Data to Plot', choices=list()),
       checkboxInput('diffCheck', 'Plot Difference vs Another Scenario'),
       conditionalPanel(
         condition = "input.diffCheck == true",
-        fluidRow(column(8,
-                        selectInput('diffScenario', 'Select Difference Scenario', choices=list())))
+        selectInput('diffScenario', 'Select Difference Scenario', choices=list())
       )
     ),
 
     # main display area
     mainPanel(
       plotOutput('timePlot', height='600px'),
-      selectInput('tvSubcatVar', 'Break plot down by:',
-                  choices=c('none','region')),
+      selectInput('tvSubcatVar', 'Break plot down by:', choices=c('none','region')),
       checkboxInput('tvFilterCheck', 'Limit plot to selected regions'),
       checkboxGroupInput('tvRgns', 'Regions', choices=c())
     ) #  main Panel

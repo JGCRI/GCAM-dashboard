@@ -22,7 +22,14 @@ last.region.filter <- NULL
 #' @export
 loadDefault <- function()
 {
-  loadProject2('./data/Reference.xls')
+  filenames <- list.files("./data")
+  data <- list()
+
+  for (filename in filenames) {
+    data[[scenarioName(filename)]] <- loadProject2(file.path('./data', filename))
+  }
+
+  data
 }
 
 #' Load the default project file into the settings
@@ -109,21 +116,6 @@ readFromExcel <- function(file) {
     data %>%
         group_split(variable, keep = FALSE) %>%
         setNames(unique(data$variable))
-}
-
-#' Get the name of the project for display
-#'
-#' Returns a place holder string if no project has been loaded yet.
-#' @param rFileinfo Reactive fileinfo object returned by the file browser in the UI
-#' @export
-getProjectName <- function(rFileinfo)
-{
-    fn <- rFileinfo()$project.filename
-    if(is.null(fn)) {
-        '->none<-'
-    } else {
-        rFileinfo()$project.filename
-    }
 }
 
 #' Get the scenarios in the project for display

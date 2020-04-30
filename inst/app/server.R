@@ -23,34 +23,27 @@ shinyServer(function(input, output, session) {
     ## Get the new data file on upload
     rFileinfo <- reactive({
         fileinfo <- input$projectFile
-        if(is.null(fileinfo)) {
-            project.filename <- "Default data"
-            project.settings <- loadDefaultProjectSettings()
-            data <- loadDefault()
+        project.settings <- loadDefaultProjectSettings()
+        project.data <- loadDefault()
+
+        if(!is.null(fileinfo)) {
+            extraData <- loadProject2(fileinfo$datapath)
+            extraScenario <- attr(extraData, "scenario_name")
+            project.data[[extraScenario]] <- extraData
         }
-        else {
-            project.filename <- fileinfo$name
-            project.settings <- loadProjectSettings(fileinfo$datapath)
-            data <- loadProject2(fileinfo$datapath)
-        }
-        project.scenarios <- attr(data, "scenario_name")
-        data <- list(data)
-        names(data) <- project.scenarios
-        project.data <- data
-        updateSelectInput(session, 'scenarioInput', choices=project.scenarios)
-        list(project.filename=project.filename,
-             project.data=project.data,
-             project.settings=project.settings,
-             project.scenarios=project.scenarios)
+
+        updateSelectInput(session, 'scenarioInput', choices=listScenarios(project.data))
+        list(project.data=project.data,
+             project.settings=project.settings)
     })
 
     ## Update controls on sidebar in response to user selections
     observe({
-        if(is.null(rFileinfo()$project.scenarios)) {
+        if(is.null(rFileinfo()$project.data)) {
             new.scenarios <- list()
         }
         else {
-            new.scenarios <- rFileinfo()$project.scenarios
+            new.scenarios <- getProjectScenarios(rFileinfo)
         }
 
         if(!all(scenarios == new.scenarios)) {
@@ -100,12 +93,6 @@ shinyServer(function(input, output, session) {
             updateSelectInput(session, 'tvSubcatVar', choices=c('none', catvars),
                               selected=prevSubcat)
         }
-    })
-
-
-
-    output$projFilename <- renderText({
-        getProjectName(rFileinfo)
     })
 
     output$scenarios <- renderText({

@@ -4,6 +4,7 @@ library(tibble)
 library(dplyr)
 library(stringr)
 library(randomcoloR)
+library(fs)
 
 ### Helper functions for the server side of the app.
 
@@ -21,7 +22,7 @@ last.region.filter <- NULL
 #' @export
 loadDefault <- function()
 {
-  loadProject2('./data/out_v-ref_p0_r0_gdpg-m_aeeg-m_sekl-m_dash.xls')
+  loadProject2('./data/Reference.xls')
 }
 
 #' Load the default project file into the settings
@@ -30,42 +31,38 @@ loadDefault <- function()
 #' @export
 loadDefaultProjectSettings <- function()
 {
-  loadProjectSettings('./data/out_v-ref_p0_r0_gdpg-m_aeeg-m_sekl-m_dash.xls')
+  loadProjectSettings('./data/Reference.xls')
 }
 
 
 #' Load a file into the UI
 #'
 #' Returns the data from the project file, if valid
-#' @param proj Path to the project file
+#' @param projFile Path to the project file
 #' @export
-loadProject2 <- function(proj)
+loadProject2 <- function(projFile)
 {
-    if (is.character(proj)) {
-        projFile <- proj
+    if (is.character(projFile)) {
         if (file.exists(projFile)) {
             if (file.access(projFile, mode = 6) != 0) {
                 stop("File ", projFile, " exists but lacks either read or write permission.")
             }
-
             prjdata <- readFromExcel(projFile)
-
-            if (!exists("prjdata", inherits = FALSE)) {
-                message(paste("File", projFile, "does not contain valid project data."))
-                message("Try loading the file into an R session and verify that it contains the variable 'prjdata'.")
-                stop("Unable to load project file ", projFile)
-            }
-            attr(prjdata, "file") <- projFile
         }
         else {
             prjdata <- list()
-            attr(prjdata, "file") <- projFile
         }
+         attr(prjdata, "file") <- projFile
+         attr(prjdata, "scenario_name") <- scenarioName(projFile)
     }
     else {
         stop("loadProject2: invalid object passed as proj argument; proj must be a filename.")
     }
     prjdata
+}
+
+scenarioName <- function(file_path) {
+  file_path %>% path_file() %>% path_ext_remove()
 }
 
 #' Load a file into the settings
@@ -86,10 +83,11 @@ loadProjectSettings <- function(file) {
 }
 
 readFromExcel <- function(file) {
+    scenario_name <- scenarioName(file)
     data <- read_excel(file,
                        col_types = c("guess", "text", "text", "guess", "guess", "guess", "text"),
                        col_names = c("variable", "sector", "order", "Units", "year", "region", "value")) %>%
-        add_column(scenario = "EPA")
+        add_column(scenario = scenario_name)
 
     # replace GAMS "Eps" output with 0.
     # See https://www.gams.com/latest/docs/gamside/special_values.htm
@@ -108,11 +106,9 @@ readFromExcel <- function(file) {
     # split single table into list of tables, named by variable
     # See https://stackoverflow.com/questions/57107721/how-to-name-the-list-of-the-group-split-output-in-dplyr
     data <- mutate(data, variable = factor(variable, levels = unique(variable)))
-    data <- data %>%
+    data %>%
         group_split(variable, keep = FALSE) %>%
         setNames(unique(data$variable))
-
-    return(list(EPA = data))
 }
 
 #' Get the name of the project for display

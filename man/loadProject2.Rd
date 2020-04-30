@@ -4,10 +4,10 @@
 \alias{loadProject2}
 \title{Load a file into the UI}
 \usage{
-loadProject2(proj)
+loadProject2(projFile)
 }
 \arguments{
-\item{proj}{Path to the project file}
+\item{projFile}{Path to the project file}
 }
 \description{
 Returns the data from the project file, if valid

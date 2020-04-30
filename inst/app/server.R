@@ -5,6 +5,7 @@ library(readxl)
 library(dplyr)
 library(readr)
 library(purrr)
+library(fs)
 library(GCAMdashboard)
 library(tibble)
 library(stringr)
@@ -24,25 +25,32 @@ shinyServer(function(input, output, session) {
         fileinfo <- input$projectFile
         if(is.null(fileinfo)) {
             project.filename <- "Default data"
-            project.data <-loadDefault()
             project.settings <- loadDefaultProjectSettings()
+            data <- loadDefault()
         }
         else {
-            project.data <- loadProject2(fileinfo$datapath)   # should be only one file
             project.filename <- fileinfo$name
             project.settings <- loadProjectSettings(fileinfo$datapath)
+            data <- loadProject2(fileinfo$datapath)
         }
-        updateSelectInput(session, 'scenarioInput', choices=listScenarios(project.data))
-        list(project.filename=project.filename, project.data=project.data, project.settings=project.settings)
+        project.scenarios <- attr(data, "scenario_name")
+        data <- list(data)
+        names(data) <- project.scenarios
+        project.data <- data
+        updateSelectInput(session, 'scenarioInput', choices=project.scenarios)
+        list(project.filename=project.filename,
+             project.data=project.data,
+             project.settings=project.settings,
+             project.scenarios=project.scenarios)
     })
 
     ## Update controls on sidebar in response to user selections
     observe({
-        if(is.null(rFileinfo()$project.data)) {
+        if(is.null(rFileinfo()$project.scenarios)) {
             new.scenarios <- list()
         }
         else {
-            new.scenarios <- getProjectScenarios(rFileinfo)
+            new.scenarios <- rFileinfo()$project.scenarios
         }
 
         if(!all(scenarios == new.scenarios)) {

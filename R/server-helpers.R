@@ -384,6 +384,9 @@ plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filte
         else
             subcatvar <- as.name(subcatvar)
 
+        if (plot_type == "line")
+            subcatvar <- 'region'
+
         pltdata <- getPlotData(prjdata, query, scen, diffscen, subcatvar,
                                filtervar, rgns)
 

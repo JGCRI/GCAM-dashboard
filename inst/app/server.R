@@ -135,6 +135,13 @@ shinyServer(function(input, output, session) {
         }
     })
 
+    output$show_breakdown_input <- reactive({
+        settings <- rFileinfo()$project.settings
+        query <- input$plotQuery
+        plot_type <- filter(settings, query == !!query)$type
+        plot_type != "line"
+    })
+
     observe({
         prj <- rFileinfo()$project.data
         scen <- input$plotScenario
@@ -153,4 +160,6 @@ shinyServer(function(input, output, session) {
         cat('diffScenario: ', input$diffScenario, '\n')
         cat('plotQuery: ', input$plotQuery, '\n')
     })
+
+    outputOptions(output, "show_breakdown_input", suspendWhenHidden = FALSE)
 })

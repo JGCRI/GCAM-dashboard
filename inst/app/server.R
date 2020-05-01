@@ -32,7 +32,7 @@ shinyServer(function(input, output, session) {
             project.data[[extraScenario]] <- extraData
         }
 
-        updateSelectInput(session, 'scenarioInput', choices=listScenarios(project.data))
+        updateSelectInput(session, 'scenarioInput', choices=rev(listScenarios(project.data)))
         list(project.data=project.data,
              project.settings=project.settings)
     })

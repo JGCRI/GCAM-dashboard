@@ -131,7 +131,7 @@ getProjectScenarios <- function(rFileinfo, concat=NULL)
     if(is.null(pd)) {
         '->none<-'
     } else {
-        rgcam::listScenarios(rFileinfo()$project.data) %>% paste(collapse=concat)
+        rev(rgcam::listScenarios(rFileinfo()$project.data) %>% paste(collapse=concat))
     }
 }
 

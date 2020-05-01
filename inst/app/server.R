@@ -89,8 +89,8 @@ shinyServer(function(input, output, session) {
             ## Assumes that a particular query has the same columns in all scenarios
             querycols <- getQuery(prj, query, scen) %>% names
             catvars <- querycols[!querycols %in% c('scenario', 'order', 'Units', 'year', 'value')]
-            prevSubcat <- if(input$tvSubcatVar %in% catvars) input$tvSubcatVar else 'none'
-            updateSelectInput(session, 'tvSubcatVar', choices=c('none', catvars),
+            prevSubcat <- if(input$subcategorySelect %in% catvars) input$subcategorySelect else 'none'
+            updateSelectInput(session, 'subcategorySelect', choices=c('none', catvars),
                               selected=prevSubcat)
         }
     })
@@ -116,18 +116,18 @@ shinyServer(function(input, output, session) {
             } else {
                 NULL
             }
-            tvSubcatVar <- input$tvSubcatVar
+            subcategorySelect <- input$subcategorySelect
 
             region.filter <- input$tvRgns
             last.region.filter <<- region.filter
 
             # If the query has changed, the value of the subcategory selector
             # may not be valid anymore. Change it to none.
-            if(!tvSubcatVar %in% names(getQuery(prj, query, scen))) {
-                tvSubcatVar <- 'none'
+            if(!subcategorySelect %in% names(getQuery(prj, query, scen))) {
+                subcategorySelect <- 'none'
             }
 
-            plotTime(prj, plot_type, query, scen, diffscen, tvSubcatVar,
+            plotTime(prj, plot_type, query, scen, diffscen, subcategorySelect,
                      input$tvFilterCheck, region.filter)
         }
         else {                          # UI state is invalid

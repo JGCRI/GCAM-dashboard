@@ -87,12 +87,30 @@ shinyServer(function(input, output, session) {
         query <- input$plotQuery
         if(uiStateValid(prj, scen, query)) {
             ## Assumes that a particular query has the same columns in all scenarios
-            querycols <- getQuery(prj, query, scen) %>% names
-            catvars <- querycols[!querycols %in% c('scenario', 'order', 'Units', 'year', 'value')]
-            prevSubcat <- if(input$subcategorySelect %in% catvars) input$subcategorySelect else 'none'
-            updateSelectInput(session, 'subcategorySelect', choices=c('none', catvars),
+            subcategories <- getSubcategories()
+            prevSubcat <- if(input$subcategorySelect %in% subcategories) input$subcategorySelect else 'none'
+            updateSelectInput(session, 'subcategorySelect', choices=c('none', subcategories),
                               selected=prevSubcat)
         }
+    })
+
+    getSubcategories <- reactive({
+        scen <- isolate(input$plotScenario)
+        prj <- isolate(rFileinfo()$project.data)
+        query <- input$plotQuery
+        data <- getQuery(prj, query, scen)
+        possible_subcategories <- data %>% names
+        subcategories <- list()
+
+        i <- 1
+        for (subcategory in possible_subcategories) {
+            if (!all(is.na(data[subcategory]))) {
+                subcategories[[i]] <- subcategory
+                i <- i + 1
+            }
+        }
+
+        subcategories[!subcategories %in% c('scenario', 'order', 'Units', 'year', 'value')]
     })
 
     output$scenarios <- renderText({

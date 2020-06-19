@@ -20,6 +20,11 @@ shinyServer(function(input, output, session) {
     scenarios <- ""
     queries <- ""
 
+    # Initialize reactive values to hold the data frame being displayed in both
+    # the time plot view and the map plot view. These data frames are used for
+    # getting hover values and for viewing the raw table data.
+    timePlot.df <- reactiveVal()
+
     ## Get the new data file on upload
     rFileinfo <- reactive({
         fileinfo <- input$projectFile
@@ -128,29 +133,28 @@ shinyServer(function(input, output, session) {
         query <- input$plotQuery
         plot_type <- filter(settings, query == !!query)$type
 
-        if(uiStateValid(prj, scen, query)) {
-            diffscen <- if(input$diffCheck) {
-                input$diffScenario
-            } else {
-                NULL
-            }
-            subcategorySelect <- input$subcategorySelect
+        if(!uiStateValid(prj, scen, query)) return(default.plot())
 
-            region.filter <- input$tvRgns
-            last.region.filter <<- region.filter
-
-            # If the query has changed, the value of the subcategory selector
-            # may not be valid anymore. Change it to none.
-            if(!subcategorySelect %in% names(getQuery(prj, query, scen))) {
-                subcategorySelect <- 'none'
-            }
-
-            plotTime(prj, plot_type, query, scen, diffscen, subcategorySelect,
-                     input$tvFilterCheck, region.filter)
+        diffscen <- if(input$diffCheck) input$diffScenario else NULL
+        if (!is.null(diffscen) && diffscen == scen) {
+            return(default.plot("Scenarios are the same"))
         }
-        else {                          # UI state is invalid
-            default.plot('Updating')
+
+        subcategorySelect <- input$subcategorySelect
+
+        region.filter <- input$tvRgns
+        last.region.filter <<- region.filter
+
+        # If the query has changed, the value of the subcategory selector
+        # may not be valid anymore. Change it to none.
+        if(!subcategorySelect %in% names(getQuery(prj, query, scen))) {
+            subcategorySelect <- 'none'
         }
+
+        plt <- plotTime(prj, plot_type, query, scen, diffscen, subcategorySelect,
+                 input$tvFilterCheck, region.filter)
+        timePlot.df(plt$plotdata)
+        plt$plot
     })
 
     output$show_breakdown_input <- reactive({
@@ -180,4 +184,13 @@ shinyServer(function(input, output, session) {
     })
 
     outputOptions(output, "show_breakdown_input", suspendWhenHidden = FALSE)
+
+    # Add a hover over the time plot bar chart
+    callModule(
+        barChartHover,
+        "timePlot",
+        reactive(input$exploreHover),
+        reactive(timePlot.df()),
+        reactive(input$subcategorySelect)
+    )
 })

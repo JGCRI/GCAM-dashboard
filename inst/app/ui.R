@@ -22,7 +22,10 @@ shinyUI(fluidPage(
 
     # main display area
     mainPanel(
-      plotOutput('timePlot', height='600px'),
+      plotOutput('timePlot',
+                 height='600px',
+                 hover = hoverOpts("exploreHover", delay = 50, delayType = 'throttle')),
+      barChartHoverUI("timePlot"),
       conditionalPanel(
         condition = "output.show_breakdown_input",
         selectInput('subcategorySelect', 'Break plot down by:', choices=c('none','region'))

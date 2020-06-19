@@ -371,7 +371,7 @@ getColorPalette <- function(subcategory_values)
 plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filter, rgns)
 {
     if(is.null(prjdata)) {
-        default.plot()
+      list(plot = default.plot())
     }
     else {
         if(filter)
@@ -390,6 +390,8 @@ plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filte
         pltdata <- getPlotData(prjdata, query, scen, diffscen, subcatvar,
                                filtervar, rgns)
 
+        if(is.null(pltdata)) return(list(plot = default.plot()))
+
         plt <- ggplot(pltdata, aes_string('year','value', fill=subcatvar, color=subcatvar)) +
           theme_minimal(base_size = 16) +
           ylab(pltdata$Units)
@@ -400,17 +402,16 @@ plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filte
           plt <- plt + geom_line(size = 1)
         }
 
-        if(is.null(subcatvar)) {
-            plt
-        }
-        else {
+        if(!is.null(subcatvar)) {
+            # need to get unfiltered plot data in order to determine the proper color scheme for subcategory breakdowns
             unfiltered_pltdata <- getPlotData(prjdata, query, scen, diffscen, subcatvar,
                                               NULL, NULL)
             subcategory_values <- getSubcategoryValues(unfiltered_pltdata, subcatvar)
             color_palette <- getColorPalette(subcategory_values)
-            plt +
+            plt <- plt +
               scale_fill_manual(values = color_palette) +
               scale_color_manual(values = color_palette)
         }
+        return(list(plot = plt, plotdata = pltdata))
     }
 }

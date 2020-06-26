@@ -3,7 +3,7 @@ library(shiny)
 library(GCAMdashboard)
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
+shinyUI(fluidPage(theme="style.css",
   # Application title
   titlePanel("EPPA Dashboard"),
 

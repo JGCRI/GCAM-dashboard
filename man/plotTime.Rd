@@ -4,7 +4,17 @@
 \alias{plotTime}
 \title{Plot values over time as a bar chart}
 \usage{
-plotTime(prjdata, plot_type, query, scen, diffscen, subcatvar, filter, rgns)
+plotTime(
+  prjdata,
+  plot_type,
+  query,
+  scen,
+  diffscen,
+  subcatvar,
+  filter,
+  rgns,
+  regionColors
+)
 }
 \arguments{
 \item{prjdata}{A project data structure}
@@ -22,6 +32,8 @@ plotTime(prjdata, plot_type, query, scen, diffscen, subcatvar, filter, rgns)
 \item{filter}{If TRUE, then filter to regions in the rgns argument}
 
 \item{rgns}{Regions to filter to, if filter is TRUE.}
+
+\item{regionColors}{Region colors to use, if plotting by region}
 }
 \description{
 Plot values over time as a bar chart

@@ -30,7 +30,9 @@ shinyServer(function(input, output, session) {
         fileinfo <- input$projectFile
         project.settings <- loadDefaultProjectSettings()
         project.regionColors <- loadDefaultRegionColors()
+        project.sectorColors <- loadDefaultSectorColors()
         project.data <- loadDefault()
+
 
         if(!is.null(fileinfo)) {
             extraData <- loadProject2(fileinfo$datapath)
@@ -41,7 +43,8 @@ shinyServer(function(input, output, session) {
         updateSelectInput(session, 'scenarioInput', choices=rev(listScenarios(project.data)))
         list(project.data=project.data,
              project.settings=project.settings,
-             project.regionColors=project.regionColors)
+             project.regionColors=project.regionColors,
+             project.sectorColors=project.sectorColors)
     })
 
     ## Update controls on sidebar in response to user selections
@@ -132,6 +135,7 @@ shinyServer(function(input, output, session) {
         prj <- rFileinfo()$project.data
         settings <- rFileinfo()$project.settings
         regionColors <- rFileinfo()$project.regionColors
+        sectorColors <- rFileinfo()$project.sectorColors
         scen <- input$plotScenario
         query <- input$plotQuery
         plot_type <- filter(settings, query == !!query)$type
@@ -155,7 +159,7 @@ shinyServer(function(input, output, session) {
         }
 
         plt <- plotTime(prj, plot_type, query, scen, diffscen, subcategorySelect,
-                 input$tvFilterCheck, region.filter, regionColors)
+                 input$tvFilterCheck, region.filter, regionColors, sectorColors)
         timePlot.df(plt$plotdata)
         plt$plot
     })

@@ -50,6 +50,15 @@ loadDefaultRegionColors <- function()
   loadRegionColors('./data/Reference.xls')
 }
 
+#' Load the default sector colors
+#'
+#' Returns the sector colors from the default project file
+#' @export
+loadDefaultSectorColors <- function()
+{
+  loadSectorColors('./data/Reference.xls')
+}
+
 #' Load a file into the UI
 #'
 #' Returns the data from the project file, if valid
@@ -105,6 +114,14 @@ loadRegionColors <- function(file) {
     mutate(region = str_replace_all(region, "_", " ")) %>%
     mutate(region = as.factor(region)) %>%
     mutate(group = as.factor(group))
+}
+
+loadSectorColors <- function(file) {
+  read_excel(file,
+             sheet = "colormap",
+             cell_cols("B:C"),
+             col_names = c("sector", "color")) %>%
+    mutate(sector = as.factor(sector))
 }
 
 readFromExcel <- function(file) {
@@ -381,6 +398,14 @@ getRegionColorPalette <- function(regionColors)
   color_palette
 }
 
+getSectorColorPalette <- function(sectorColors)
+{
+  color_palette <- sectorColors$color
+  names(color_palette) <- sectorColors$sector
+  color_palette
+}
+
+
 #' Plot values over time as a bar chart
 #' @param prjdata A project data structure
 #' @param plot_type The type to plot: stacked or line
@@ -391,10 +416,11 @@ getRegionColorPalette <- function(regionColors)
 #' @param filter  If TRUE, then filter to regions in the rgns argument
 #' @param rgns  Regions to filter to, if filter is TRUE.
 #' @param regionColors Region colors to use, if plotting by region
+#' @param sectorColors Sector colors to use, if plotting by sector
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes_string geom_bar geom_line theme_minimal ylab scale_fill_manual scale_color_manual
 #' @export
-plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filter, rgns, regionColors)
+plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filter, rgns, regionColors, sectorColors)
 {
     if(is.null(prjdata)) {
       list(plot = default.plot())
@@ -435,7 +461,7 @@ plotTime <- function(prjdata, plot_type, query, scen, diffscen, subcatvar, filte
             subcategory_values <- getSubcategoryValues(unfiltered_pltdata, subcatvar)
 
             if (subcatvar != "region") {
-              color_palette <- getColorPalette(subcategory_values)
+              color_palette <- getSectorColorPalette(sectorColors)
             } else {
               color_palette <- getRegionColorPalette(regionColors)
             }
